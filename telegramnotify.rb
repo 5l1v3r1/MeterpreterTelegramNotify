@@ -39,14 +39,14 @@ module Msf
 
 
 			def on_session_open(session)
-				url="https://api.telegram.org/bot780097728:AAGWa_BVRGWoumJoz5PjJ5QW3gz6rvLeCG4/sendMessage?chat_id=-1001425973394&text=fuck yeah! #{session.session_host} connected back"
+				url="https://api.telegram.org/bot token_placeholder /sendMessage?chat_id=-1001425973394&text=fuck yeah! #{session.session_host} connected back"
 				sslget(url,session.sid,"open")
 				return
 			end
 
 
 			def on_session_close(session,reason = "")
-				url="https://api.telegram.org/bot780097728:AAGWa_BVRGWoumJoz5PjJ5QW3gz6rvLeCG4/sendMessage?chat_id=-1001425973394&text=we lose #{session.session_host}"
+				url="https://api.telegram.org/bot token_placeholder /sendMessage?chat_id=-1001425973394&text=we lose #{session.session_host}"
 				sslget(url,session.sid,"close")
 				return
 			end
@@ -86,7 +86,7 @@ module Msf
 			end
 
 			def cmd_notify_stop
-				print_status("Stopping the monitoring of sessions to Slack")
+				print_status("Stopping the monitoring of sessions to Telegram")
 				self.framework.events.remove_session_subscriber(self)
 			end
 
