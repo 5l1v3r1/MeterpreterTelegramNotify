@@ -8,7 +8,6 @@ require 'net/http'
 require 'net/https'
 
 module Msf
-
 	class Plugin::Notify < Msf::Plugin
 		include Msf::SessionEvent
 
@@ -29,24 +28,32 @@ module Msf
 		end
 
 		def desc
-			"Automatically send Telegram notifications when sessions are created and closed."
+			"Automatically send Tg Messgae when sessions are created and closed."
 		end
 
 		class NotifyDispatcher
 			include Msf::Ui::Console::CommandDispatcher
+			def myconfs
+				{
+					'token' => 'your token',
+					'chat_id' => 'your chat_id',
+					'proxy_addr' => '127.0.0.1',
+					'proxy_port' => 1080
+			}
+			end
 			$opened = Array.new
 			$closed = Array.new
 
 
 			def on_session_open(session)
-				url="https://api.telegram.org/bot token_placeholder /sendMessage?chat_id=-1001425973394&text=fuck yeah! #{session.session_host} connected back"
+				url="https://api.telegram.org/bot#{myconfs['token']}/sendMessage?chat_id=#{myconfs['chat_id']}&text=fuck yeah! #{session.session_host} connected back"
 				sslget(url,session.sid,"open")
 				return
 			end
 
 
 			def on_session_close(session,reason = "")
-				url="https://api.telegram.org/bot token_placeholder /sendMessage?chat_id=-1001425973394&text=we lose #{session.session_host}"
+				url="https://api.telegram.org/bot#{myconfs['token']}/sendMessage?chat_id=#{myconfs['chat_id']}&text=we lose #{session.session_host}"
 				sslget(url,session.sid,"close")
 				return
 			end
@@ -59,13 +66,13 @@ module Msf
 			def sslget(url,session_id,event)
 				if event == "open" and $opened.exclude?(session_id)
 					url = URI(url)
-					http = Net::HTTP.new(url.host, url.port,"127.0.0.1", 1080)
+					http = Net::HTTP.new(url.host, url.port,myconfs['proxy_addr'], myconfs['proxy_port'])
 					http.use_ssl = true
 					resp = http.get(url)
 					$opened.push(session_id)
 				elsif event == "close" and $closed.exclude?(session_id)
 					url = URI(url)
-					http = Net::HTTP.new(url.host, url.port,"127.0.0.1", 1080)
+					http = Net::HTTP.new(url.host, url.port,myconfs['proxy_addr'], myconfs['proxy_port'])
 					http.use_ssl = true
 					resp = http.get(url)
 					$closed.push(session_id)
@@ -75,18 +82,18 @@ module Msf
 
 			def commands
 				{
-					'notify_start'				=> "Start Notify Plugin after saving settings.",
-					'notify_stop'					=> "Stop monitoring for new sessions.",
+					'notify_start'				=> "start monitoring for new session.",
+					'notify_stop'					=> "stop monitoring for new sessions.",
 				}
 			end
 
 			def cmd_notify_start
 				self.framework.events.add_session_subscriber(self)
-				print_good("Notify Plugin Started, Monitoring Sessions")
+				print_good("notify successfully started")
 			end
 
 			def cmd_notify_stop
-				print_status("Stopping the monitoring of sessions to Telegram")
+				print_status("notify successfully stoped")
 				self.framework.events.remove_session_subscriber(self)
 			end
 
